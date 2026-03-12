@@ -46,12 +46,14 @@ export default function NewTripPage() {
       const newTrip = await res.json();
       window.location.href = `/trips/${newTrip._id}`;
     } catch (err) {
-      console.error("Error creating trip:", err);
-      alert(`Could not create trip: ${err.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+  console.error("Error creating trip:", err);
+  if (err instanceof Error) {
+    alert(`Could not create trip: ${err.message}`);
+  } else {
+    alert("Could not create trip: Unknown error");
+  }
+}
+;
 
   return (
     <div className="p-8 text-white">
