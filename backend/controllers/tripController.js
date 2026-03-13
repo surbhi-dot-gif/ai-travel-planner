@@ -20,12 +20,19 @@ async function geminiGenerate(prompt) {
     }
 
     const data = await response.json();
-    // Gemini returns text inside candidates[0].content.parts[0].text
     return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
   } catch (err) {
     console.error("Gemini call failed:", err);
     return "[]"; // fallback empty JSON
   }
+}
+
+// Utility: clean Gemini output before parsing
+function cleanJson(text) {
+  return text
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .trim();
 }
 
 // Generate itinerary
@@ -43,7 +50,8 @@ Return ONLY valid JSON array with objects containing: activity_name, activity_de
   }
 
   try {
-    return JSON.parse(itineraryText);
+    const cleanText = cleanJson(itineraryText);
+    return JSON.parse(cleanText);
   } catch (err) {
     console.error("Parse error:", err, "Raw text:", itineraryText);
     return [];
@@ -149,7 +157,8 @@ Return ONLY valid JSON array of activities with fields: activity_name, activity_
 
     let newActivities;
     try {
-      newActivities = JSON.parse(activitiesText);
+      const cleanText = cleanJson(activitiesText);
+      newActivities = JSON.parse(cleanText);
     } catch {
       console.error("Parse error regenerating day:", activitiesText);
       newActivities = [
