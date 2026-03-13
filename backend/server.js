@@ -44,3 +44,4 @@ const packingListRouter = require("./routes/packingList");
 
 app.use("/api/hotels", hotelsRouter);
 app.use("/api/packing-list", packingListRouter);
+app.get("/", (req, res) = res.send("AI Travel Planner Backend is live ??"); }); 
