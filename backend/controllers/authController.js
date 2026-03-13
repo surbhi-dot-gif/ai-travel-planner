@@ -31,7 +31,7 @@ exports.register = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    // Send response with token
+    // ✅ Send token only
     res.status(201).json({ token });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -58,7 +58,7 @@ exports.login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    // Send response with token
+    // ✅ Send token only
     res.json({ token });
   } catch (err) {
     res.status(400).json({ error: err.message });
