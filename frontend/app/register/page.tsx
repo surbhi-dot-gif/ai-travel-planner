@@ -18,7 +18,12 @@ export default function RegisterPage() {
         body: JSON.stringify(form),
       });
       const data = await res.json();
-      setMessage(data.message || data.error);
+      if (res.ok) {
+        setMessage("Registration successful! Redirecting to login...");
+        window.location.href = "/login"; // ✅ redirect to login page
+      } else {
+        setMessage(data.error || "Registration failed");
+      }
     } catch {
       setMessage("Error registering user");
     }

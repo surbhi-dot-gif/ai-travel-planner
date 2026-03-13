@@ -21,6 +21,7 @@ export default function LoginPage() {
       if (data.token) {
         localStorage.setItem("token", data.token);
         setMessage("Login successful!");
+        window.location.href = "/trips"; // ✅ redirect to trips page
       } else {
         setMessage(data.error);
       }
