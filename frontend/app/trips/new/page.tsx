@@ -21,7 +21,7 @@ export default function NewTripPage() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/trips", {
+      const res = await fetch("https://ai-travel-planner-bzx1.onrender.com/api/trips", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -46,14 +46,14 @@ export default function NewTripPage() {
       const newTrip = await res.json();
       window.location.href = `/trips/${newTrip._id}`;
     } catch (err) {
-  console.error("Error creating trip:", err);
-  if (err instanceof Error) {
-    alert(`Could not create trip: ${err.message}`);
-  } else {
-    alert("Could not create trip: Unknown error");
-  }
-}
-;
+      console.error("Error creating trip:", err);
+      if (err instanceof Error) {
+        alert(`Could not create trip: ${err.message}`);
+      } else {
+        alert("Could not create trip: Unknown error");
+      }
+    }
+  };
 
   return (
     <div className="p-8 text-white">
@@ -99,5 +99,4 @@ export default function NewTripPage() {
       </div>
     </div>
   );
-}
 }

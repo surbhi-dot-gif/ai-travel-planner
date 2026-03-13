@@ -10,10 +10,13 @@ const app = express();
 // Middleware
 app.use(express.json());
 
-// Enable CORS so frontend (localhost:3000) can call backend (localhost:5000)
+// Enable CORS so both local dev and Netlify frontend can call backend
 app.use(
   cors({
-    origin: "http://localhost:3000", // allow Next.js dev server
+    origin: [
+      "http://localhost:3000", // local Next.js dev server
+      "https://meek-seahorse-aa6bc5.netlify.app" // deployed Netlify frontend
+    ],
     credentials: true,
   })
 );
@@ -25,7 +28,7 @@ const tripRoutes = require("./routes/tripRoutes");
 app.use("/api/auth", authRoutes);
 app.use("/api/trips", tripRoutes);
 
-//Hotel and PackingList
+// Hotel and PackingList
 const hotelsRouter = require("./routes/hotels");
 const packingListRouter = require("./routes/packingList");
 
