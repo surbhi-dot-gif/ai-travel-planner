@@ -1,26 +1,23 @@
 const Trip = require("../models/Trip");
 const fetch = require("node-fetch");
 
-// Helper: Ollama local call
-async function ollamaGenerate(prompt) {
-  const response = await fetch("http://localhost:11434/api/generate", {
+// OpenRouter call
+async function openRouterGenerate(prompt) {
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ model: "mistral", prompt, options: { temperature: 0.8 } }),
+    headers: {
+      "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`, // set in Render env vars
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "mistralai/mistral-7b-instruct", // ✅ free model
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+    }),
   });
 
-  const text = await response.text();
-  const lines = text.trim().split("\n");
-  let fullResponse = "";
-  for (const line of lines) {
-    try {
-      const obj = JSON.parse(line);
-      if (obj.response) fullResponse += obj.response;
-    } catch (err) {
-      console.error("Line parse error:", err);
-    }
-  }
-  return fullResponse.trim();
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content || "";
 }
 
 // Generate itinerary
@@ -30,7 +27,7 @@ Budget: ${budgetType}.
 Interests: ${interests.join(", ")}.
 Return ONLY valid JSON array with objects containing: activity_name, activity_description, activity_location, activity_budget, activity_link.`;
 
-  const itineraryText = await ollamaGenerate(prompt);
+  const itineraryText = await openRouterGenerate(prompt);
 
   try {
     return JSON.parse(itineraryText);
@@ -40,7 +37,7 @@ Return ONLY valid JSON array with objects containing: activity_name, activity_de
   }
 }
 
-//  Create trip with fallback activities
+// Create trip
 const createTrip = async (req, res) => {
   try {
     const { destination, days, budgetType, interests } = req.body;
@@ -76,11 +73,11 @@ const createTrip = async (req, res) => {
     res.json(trip);
   } catch (err) {
     console.error("Error creating trip:", err);
-    res.status(500).json({ error: "Error creating trip" });
+    res.status(500).json({ error: "Error creating trip", details: err.message });
   }
 };
 
-// Get all trips
+// Other controllers unchanged...
 const getTrips = async (req, res) => {
   try {
     const trips = await Trip.find({ userId: req.user.id });
@@ -91,7 +88,6 @@ const getTrips = async (req, res) => {
   }
 };
 
-// Get single trip
 const getTripById = async (req, res) => {
   try {
     const trip = await Trip.findOne({ _id: req.params.id, userId: req.user.id });
@@ -103,7 +99,6 @@ const getTripById = async (req, res) => {
   }
 };
 
-// Update day
 const updateDay = async (req, res) => {
   try {
     const { id, day, activities } = req.body;
@@ -122,7 +117,6 @@ const updateDay = async (req, res) => {
   }
 };
 
-// Regenerate day with fallback
 const regenerateDay = async (req, res) => {
   try {
     const { id, day } = req.body;
@@ -135,7 +129,7 @@ Interests: ${trip.interests.join(", ")}.
 Provide a fresh variation.
 Return ONLY valid JSON array of activities with fields: activity_name, activity_description, activity_location, activity_budget, activity_link.`;
 
-    const activitiesText = await ollamaGenerate(prompt);
+    const activitiesText = await openRouterGenerate(prompt);
 
     let newActivities;
     try {
