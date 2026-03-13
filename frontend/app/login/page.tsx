@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";  // ✅ import router
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [message, setMessage] = useState("");
+  const router = useRouter();  // ✅ initialize router
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -21,7 +23,7 @@ export default function LoginPage() {
       if (data.token) {
         localStorage.setItem("token", data.token);
         setMessage("Login successful!");
-        window.location.href = "/trips"; // ✅ redirect to trips page
+        router.push("/trips"); //  Next.js redirect
       } else {
         setMessage(data.error);
       }

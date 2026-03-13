@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation"; // ✅ import router
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ username: "", email: "", password: "" });
   const [message, setMessage] = useState("");
+  const router = useRouter(); // ✅ initialize router
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -20,7 +22,7 @@ export default function RegisterPage() {
       const data = await res.json();
       if (res.ok) {
         setMessage("Registration successful! Redirecting to login...");
-        window.location.href = "/login"; // ✅ redirect to login page
+        router.push("/login"); // ✅ Next.js redirect
       } else {
         setMessage(data.error || "Registration failed");
       }
@@ -65,3 +67,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+
