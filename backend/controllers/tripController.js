@@ -3,21 +3,30 @@ const fetch = require("node-fetch");
 
 // OpenRouter call
 async function openRouterGenerate(prompt) {
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`, // set in Render env vars
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "mistralai/mistral-7b-instruct", // ✅ free model
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-    }),
-  });
+  try {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`, // set in Render env vars
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "mistralai/mistral-7b-instruct", // ✅ free model
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+      }),
+    });
 
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content || "";
+    if (!response.ok) {
+      throw new Error(`OpenRouter error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || "";
+  } catch (err) {
+    console.error("OpenRouter call failed:", err);
+    return "[]"; // return empty JSON array so fallback kicks in
+  }
 }
 
 // Generate itinerary
@@ -29,10 +38,15 @@ Return ONLY valid JSON array with objects containing: activity_name, activity_de
 
   const itineraryText = await openRouterGenerate(prompt);
 
+  if (!itineraryText || itineraryText.trim().length === 0) {
+    console.error("Empty response from OpenRouter");
+    return [];
+  }
+
   try {
     return JSON.parse(itineraryText);
   } catch (err) {
-    console.error("Parse error:", err);
+    console.error("Parse error:", err, "Raw text:", itineraryText);
     return [];
   }
 }
@@ -77,7 +91,7 @@ const createTrip = async (req, res) => {
   }
 };
 
-// Other controllers unchanged...
+// Get all trips
 const getTrips = async (req, res) => {
   try {
     const trips = await Trip.find({ userId: req.user.id });
@@ -88,6 +102,7 @@ const getTrips = async (req, res) => {
   }
 };
 
+// Get single trip
 const getTripById = async (req, res) => {
   try {
     const trip = await Trip.findOne({ _id: req.params.id, userId: req.user.id });
@@ -99,6 +114,7 @@ const getTripById = async (req, res) => {
   }
 };
 
+// Update day
 const updateDay = async (req, res) => {
   try {
     const { id, day, activities } = req.body;
@@ -117,6 +133,7 @@ const updateDay = async (req, res) => {
   }
 };
 
+// Regenerate day
 const regenerateDay = async (req, res) => {
   try {
     const { id, day } = req.body;
@@ -135,6 +152,7 @@ Return ONLY valid JSON array of activities with fields: activity_name, activity_
     try {
       newActivities = JSON.parse(activitiesText);
     } catch {
+      console.error("Parse error regenerating day:", activitiesText);
       newActivities = [
         {
           activity_name: "Fallback activity",
