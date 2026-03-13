@@ -1,31 +1,30 @@
 const Trip = require("../models/Trip");
 const fetch = require("node-fetch");
 
-// OpenRouter call
-async function openRouterGenerate(prompt) {
+// Gemini API call
+async function geminiGenerate(prompt) {
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`, // set in Render env vars
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "mistralai/mistral-7b-instruct", // ✅ free model
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
-      }),
-    });
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + process.env.GEMINI_API_KEY,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+        }),
+      }
+    );
 
     if (!response.ok) {
-      throw new Error(`OpenRouter error: ${response.status} ${response.statusText}`);
+      throw new Error(`Gemini error: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
-    return data.choices?.[0]?.message?.content || "";
+    // Gemini returns text inside candidates[0].content.parts[0].text
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
   } catch (err) {
-    console.error("OpenRouter call failed:", err);
-    return "[]"; // return empty JSON array so fallback kicks in
+    console.error("Gemini call failed:", err);
+    return "[]"; // fallback empty JSON
   }
 }
 
@@ -36,10 +35,10 @@ Budget: ${budgetType}.
 Interests: ${interests.join(", ")}.
 Return ONLY valid JSON array with objects containing: activity_name, activity_description, activity_location, activity_budget, activity_link.`;
 
-  const itineraryText = await openRouterGenerate(prompt);
+  const itineraryText = await geminiGenerate(prompt);
 
   if (!itineraryText || itineraryText.trim().length === 0) {
-    console.error("Empty response from OpenRouter");
+    console.error("Empty response from Gemini");
     return [];
   }
 
@@ -146,7 +145,7 @@ Interests: ${trip.interests.join(", ")}.
 Provide a fresh variation.
 Return ONLY valid JSON array of activities with fields: activity_name, activity_description, activity_location, activity_budget, activity_link.`;
 
-    const activitiesText = await openRouterGenerate(prompt);
+    const activitiesText = await geminiGenerate(prompt);
 
     let newActivities;
     try {
