@@ -1,3 +1,5 @@
+console.log("Gemini key loaded:", process.env.GEMINI_API_KEY ? "Yes" : "No");
+
 const Trip = require("../models/Trip");
 const fetch = require("node-fetch");
 
