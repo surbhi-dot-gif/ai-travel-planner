@@ -28,7 +28,7 @@ export default function TripPage() {
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/trips/${id}`,
+        `https://ai-travel-planner-bzx1.onrender.com/api/trips/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -36,12 +36,13 @@ export default function TripPage() {
           },
         }
       );
+      if (!res.ok) throw new Error(`Failed to fetch trip: ${res.status}`);
       const data = await res.json();
       setTrip(data);
 
       if (data.destination) {
         const hotelRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/hotels/${data.destination}`,
+          `https://ai-travel-planner-bzx1.onrender.com/api/hotels/${data.destination}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -49,11 +50,13 @@ export default function TripPage() {
             },
           }
         );
-        const hotelData = await hotelRes.json();
-        setHotels(hotelData.hotels);
+        if (hotelRes.ok) {
+          const hotelData = await hotelRes.json();
+          setHotels(hotelData.hotels || []);
+        }
 
         const packRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/packing-list?season=summer`,
+          `https://ai-travel-planner-bzx1.onrender.com/api/packing-list?season=summer`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -61,8 +64,10 @@ export default function TripPage() {
             },
           }
         );
-        const packData = await packRes.json();
-        setPackingList(packData.items);
+        if (packRes.ok) {
+          const packData = await packRes.json();
+          setPackingList(packData.items || []);
+        }
       }
     }
     fetchTrip();
@@ -72,7 +77,7 @@ export default function TripPage() {
     const token = localStorage.getItem("token");
 
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/trips/${id}/regenerateDay/${day}`,
+      `https://ai-travel-planner-bzx1.onrender.com/api/trips/${id}/regenerateDay/${day}`,
       {
         method: "POST",
         headers: {
@@ -81,6 +86,7 @@ export default function TripPage() {
         },
       }
     );
+    if (!res.ok) throw new Error(`Failed to regenerate day: ${res.status}`);
     const data = await res.json();
     setTrip(data);
   }
