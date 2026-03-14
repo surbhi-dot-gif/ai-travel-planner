@@ -9,7 +9,7 @@ const activitySchema = new mongoose.Schema({
 });
 
 const daySchema = new mongoose.Schema({
-  day: { type: Number, required: true },   // ✅ critical for regeneration
+  day: { type: Number, required: true },   // critical for regeneration
   activities: { type: [activitySchema], default: [] },
 });
 
@@ -19,7 +19,7 @@ const tripSchema = new mongoose.Schema({
   days: { type: Number, required: true },
   budgetType: { type: String, enum: ["low", "medium", "high"], required: true },
   interests: { type: [String], default: [] },
-  itinerary: { type: [daySchema], default: [] }, // ✅ structured by day
+  itinerary: { type: [daySchema], default: [] }, // structured by day
 });
 
 module.exports = mongoose.model("Trip", tripSchema);

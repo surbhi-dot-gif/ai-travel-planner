@@ -1,4 +1,3 @@
-// app/trips/[id]/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -26,17 +25,42 @@ export default function TripPage() {
 
   useEffect(() => {
     async function fetchTrip() {
-      const res = await fetch(`/api/trips/${id}`);
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/trips/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       const data = await res.json();
       setTrip(data);
 
-      // fetch hotels + packing list once trip is loaded
       if (data.destination) {
-        const hotelRes = await fetch(`/api/hotels/${data.destination}`);
+        const hotelRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/hotels/${data.destination}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
         const hotelData = await hotelRes.json();
         setHotels(hotelData.hotels);
 
-        const packRes = await fetch(`/api/packing-list?season=summer`);
+        const packRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/packing-list?season=summer`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
         const packData = await packRes.json();
         setPackingList(packData.items);
       }
@@ -45,9 +69,18 @@ export default function TripPage() {
   }, [id]);
 
   async function regenerateDay(day: number) {
-    const res = await fetch(`/api/trips/${id}/regenerateDay/${day}`, {
-      method: "POST",
-    });
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/trips/${id}/regenerateDay/${day}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
     const data = await res.json();
     setTrip(data);
   }
@@ -58,7 +91,6 @@ export default function TripPage() {
     <div className="p-6 space-y-8">
       <h1 className="text-2xl font-bold">{trip.destination} Itinerary</h1>
 
-      {/* Itinerary */}
       {trip.activities.map((act) => (
         <div
           key={act.day}
@@ -77,7 +109,6 @@ export default function TripPage() {
         </div>
       ))}
 
-      {/* Hotels */}
       <div>
         <h2 className="text-xl font-bold">Hotels</h2>
         <div className="space-y-4 mt-2">
@@ -87,7 +118,6 @@ export default function TripPage() {
         </div>
       </div>
 
-      {/* Packing List */}
       <div>
         <h2 className="text-xl font-bold">Packing List</h2>
         <PackingListCard items={packingList} />

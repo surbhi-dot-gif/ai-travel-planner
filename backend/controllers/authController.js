@@ -3,7 +3,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-// ✅ Register new user
+//  Register new user
 exports.register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -31,14 +31,14 @@ exports.register = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    // ✅ Send token only
+    //  Send token only
     res.status(201).json({ token });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
-// ✅ Login existing user
+// Login existing user
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -58,7 +58,7 @@ exports.login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    // ✅ Send token only
+    // Send token only
     res.json({ token });
   } catch (err) {
     res.status(400).json({ error: err.message });
