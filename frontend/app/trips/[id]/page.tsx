@@ -14,7 +14,7 @@ interface Activity {
 interface Trip {
   _id: string;
   destination: string;
-  activities: Activity[];
+  activities?: Activity[]; // make optional
 }
 
 export default function TripPage() {
@@ -97,36 +97,42 @@ export default function TripPage() {
     <div className="p-6 space-y-8">
       <h1 className="text-2xl font-bold">{trip.destination} Itinerary</h1>
 
-      {trip.activities.map((act) => (
-        <div
-          key={act.day}
-          className="border rounded-lg p-4 shadow-sm bg-white"
-        >
-          <h2 className="text-lg font-semibold">
-            Day {act.day}: {act.title}
-          </h2>
-          <p className="text-gray-700">{act.description}</p>
-          <button
-            onClick={() => regenerateDay(act.day)}
-            className="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+      {trip.activities && trip.activities.length > 0 ? (
+        trip.activities.map((act) => (
+          <div
+            key={act.day}
+            className="border rounded-lg p-4 shadow-sm bg-white"
           >
-            Regenerate Day
-          </button>
-        </div>
-      ))}
+            <h2 className="text-lg font-semibold">
+              Day {act.day}: {act.title}
+            </h2>
+            <p className="text-gray-700">{act.description}</p>
+            <button
+              onClick={() => regenerateDay(act.day)}
+              className="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Regenerate Day
+            </button>
+          </div>
+        ))
+      ) : (
+        <p>No activities found.</p>
+      )}
 
       <div>
         <h2 className="text-xl font-bold">Hotels</h2>
         <div className="space-y-4 mt-2">
-          {hotels.map((hotel, idx) => (
-            <HotelCard key={idx} hotel={hotel} />
-          ))}
+          {hotels && hotels.length > 0 ? (
+            hotels.map((hotel, idx) => <HotelCard key={idx} hotel={hotel} />)
+          ) : (
+            <p>No hotels found.</p>
+          )}
         </div>
       </div>
 
       <div>
         <h2 className="text-xl font-bold">Packing List</h2>
-        <PackingListCard items={packingList} />
+        <PackingListCard items={packingList || []} />
       </div>
     </div>
   );
